@@ -12,25 +12,21 @@ import TemplateClassic from "./templates/TemplateClassic";
 import TemplateElegant from "./templates/TemplateElegant";
 import TemplateBold from "./templates/TemplateBold";
 
-export default function LivePreview({ data }) {
+export default function LivePreview({ data, showDownload = true }) {
   const previewRef = useRef();
 
-  // ✅ Move useEffect inside the component
   useEffect(() => {
-    if (!data?.font) return;
+    if (!data?.font) return undefined;
 
     const link = document.createElement("link");
-    link.href = `https://fonts.googleapis.com/css2?family=${data.font.replace(
-      /\s+/g,
-      "+"
-    )}:wght@400;600;700&display=swap`;
+    link.href = `https://fonts.googleapis.com/css2?family=${data.font.replace(/\s+/g, "+")}:wght@400;600;700&display=swap`;
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
     return () => {
       document.head.removeChild(link);
     };
-  }, [data.font]);
+  }, [data?.font]);
 
   const handleDownloadPDF = async () => {
     const element = previewRef.current;
@@ -74,7 +70,7 @@ export default function LivePreview({ data }) {
           borderRadius: 3,
         }}
       >
-        🖥️ Fill details and click “Save & Preview” to see your portfolio here!
+        Fill details and click Save & Preview to see your portfolio here.
       </Typography>
     );
   }
@@ -112,15 +108,11 @@ export default function LivePreview({ data }) {
         {renderTemplate()}
       </Paper>
 
-      <Button
-        variant="contained"
-        startIcon={<DownloadIcon />}
-        color="secondary"
-        onClick={handleDownloadPDF}
-        sx={{ borderRadius: 2 }}
-      >
-        Download as PDF
-      </Button>
+      {showDownload && (
+        <Button variant="contained" startIcon={<DownloadIcon />} color="secondary" onClick={handleDownloadPDF} sx={{ borderRadius: 2 }}>
+          Download as PDF
+        </Button>
+      )}
     </Box>
   );
 }

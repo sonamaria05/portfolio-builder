@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
+const projectText = (project) => project?.desc || project?.description || "";
+
 export default function TemplateBold({ data = {} }) {
   return (
     <Box
@@ -13,27 +15,30 @@ export default function TemplateBold({ data = {} }) {
       }}
     >
       <Typography variant="h3" fontWeight="bold" color="secondary">
-        {data?.name || "Your Name"}
+        {data.name || "Your Name"}
+      </Typography>
+      <Typography variant="h6" color="#ddd">
+        {data.title || "Professional Title"}
       </Typography>
       <Typography variant="subtitle1" color="#ccc">
-        {data?.email || "Email address"}
+        {data.email || "Email address"}
       </Typography>
 
       <Typography sx={{ mt: 2, color: "#ddd" }}>
-        {data?.about || "Describe yourself confidently..."}
+        {data.about || "Describe yourself confidently..."}
       </Typography>
 
       <Box sx={{ mt: 3 }}>
         <Typography variant="h5" color="secondary">
           Projects
         </Typography>
-        {data?.projects?.length ? (
-          data.projects.map((p, i) => (
+        {(data.projects || []).filter((p) => p.title || projectText(p) || p.link).length ? (
+          data.projects.map((project, i) => (
             <Box key={i} sx={{ mt: 1 }}>
-              <Typography fontWeight="bold">{p?.title}</Typography>
-              <Typography>{p?.description}</Typography>
-              {p?.link && (
-                <a href={p.link} target="_blank" rel="noreferrer" style={{ color: "#90caf9" }}>
+              <Typography fontWeight="bold">{project.title || "Untitled Project"}</Typography>
+              <Typography>{projectText(project)}</Typography>
+              {project.link && (
+                <a href={project.link} target="_blank" rel="noreferrer" style={{ color: "#90caf9" }}>
                   View
                 </a>
               )}
@@ -48,7 +53,7 @@ export default function TemplateBold({ data = {} }) {
         <Typography variant="h5" color="secondary">
           Skills
         </Typography>
-        <Typography>{data?.skills?.join(", ") || "No skills yet."}</Typography>
+        <Typography>{(data.skills || []).filter(Boolean).join(", ") || "No skills yet."}</Typography>
       </Box>
     </Box>
   );

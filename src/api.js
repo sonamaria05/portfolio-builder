@@ -1,14 +1,8 @@
-// ✅ src/api.js
 import axios from "axios";
 
-// Adjust to your backend URL if deployed
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
 });
-
-// =========================
-// 🔐 AUTH ENDPOINTS
-// =========================
 
 export const signupApi = async (username, email, password) => {
   try {
@@ -30,10 +24,6 @@ export const loginApi = async (email, password) => {
   }
 };
 
-// =========================
-// 🧱 PORTFOLIO ENDPOINTS
-// =========================
-
 export const savePortfolioApi = async (portfolio) => {
   try {
     const res = await API.post("/portfolios/save", portfolio);
@@ -54,7 +44,26 @@ export const publishPortfolioApi = async (portfolio) => {
   }
 };
 
-// ✅ Optional helper for adding Auth Token automatically
+export const getMyPortfolioApi = async () => {
+  try {
+    const res = await API.get("/portfolios/me");
+    return res.data;
+  } catch (err) {
+    console.error("Get Portfolio Error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export const getPublishedPortfolioApi = async (slug) => {
+  try {
+    const res = await API.get(`/portfolios/public/${encodeURIComponent(slug)}`);
+    return res.data;
+  } catch (err) {
+    console.error("Get Published Portfolio Error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

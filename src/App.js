@@ -1,10 +1,5 @@
 import React, { useState, createContext, useMemo } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import {
   createTheme,
   ThemeProvider,
@@ -21,10 +16,10 @@ import HomePage from "./pages/HomePage";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import BuilderPage from "./pages/BuilderPage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
-// ✅ Reusable Navbar component
 function Navbar({ mode, toggleColorMode }) {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -74,12 +69,11 @@ function Navbar({ mode, toggleColorMode }) {
   );
 }
 
-// ✅ Reusable Footer component
 function Footer() {
   return (
     <Box sx={{ textAlign: "center", py: 2, bgcolor: "background.paper", mt: 4 }}>
       <Typography variant="body2" color="text.secondary">
-        © {new Date().getFullYear()} Portfolio Builder | Designed with ❤️ using React + MUI
+        © {new Date().getFullYear()} Portfolio Builder | Designed with care using React + MUI
       </Typography>
     </Box>
   );
@@ -94,13 +88,13 @@ function AppContent({ mode, toggleColorMode }) {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/builder" element={<BuilderPage />} />
+        <Route path="/portfolio/:slug" element={<PortfolioPage />} />
       </Routes>
       <Footer />
     </>
   );
 }
 
-// ✅ Main App
 function App() {
   const [mode, setMode] = useState("light");
 
@@ -136,10 +130,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <AppContent
-            mode={mode}
-            toggleColorMode={colorMode.toggleColorMode}
-          />
+          <AppContent mode={mode} toggleColorMode={colorMode.toggleColorMode} />
         </BrowserRouter>
       </ThemeProvider>
     </ColorModeContext.Provider>

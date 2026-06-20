@@ -1,30 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getByUsername } from '../api';
-import Navbar from '../components/Navbar';
-import PortfolioPreview from '../components/PortfolioPreview';
-import { Container, Paper } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Container, Paper, Typography } from "@mui/material";
+import { getPublishedPortfolioApi } from "../api";
+import LivePreview from "../components/LivePreview";
 
-export default function PortfolioPage(){
-  const { username } = useParams();
+export default function PortfolioPage() {
+  const { slug } = useParams();
   const [portfolio, setPortfolio] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=> {
-    (async ()=> {
-      const res = await getByUsername(username);
-      if(res.portfolio) setPortfolio(res.portfolio);
-      else setPortfolio(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getPublishedPortfolioApi(slug);
+        setPortfolio(res.portfolio || null);
+      } catch {
+        setPortfolio(null);
+      } finally {
+        setLoading(false);
+      }
     })();
-  }, [username]);
+  }, [slug]);
 
   return (
-    <>
-      <Navbar />
-      <Container sx={{mt:4}}>
-        <Paper sx={{p:3}}>
-          {portfolio ? <PortfolioPreview portfolio={portfolio} /> : <div>Not found</div>}
-        </Paper>
-      </Container>
-    </>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
+      <Paper sx={{ p: 3 }}>
+        {loading && <Typography>Loading portfolio...</Typography>}
+        {!loading && portfolio && <LivePreview data={portfolio} showDownload={false} />}
+        {!loading && !portfolio && <Typography>Portfolio not found.</Typography>}
+      </Paper>
+    </Container>
   );
 }

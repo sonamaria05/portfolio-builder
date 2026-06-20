@@ -10,84 +10,97 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Alert,
+  Link,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import PortfolioForm from "../components/PortfolioForm";
 import LivePreview from "../components/LivePreview";
+import { getMyPortfolioApi, publishPortfolioApi, savePortfolioApi } from "../api";
 
-// Mock APIs
-const savePortfolioApi = async (payload) => {
-  console.log("Saving portfolio:", payload);
-  await new Promise((r) => setTimeout(r, 800));
-  return { success: true };
+const defaultData = {
+  name: "",
+  title: "",
+  email: "",
+  about: "",
+  skills: [""],
+  projects: [{ title: "", desc: "", link: "" }],
+  experience: [{ company: "", role: "", duration: "" }],
+  education: [{ institution: "", degree: "", year: "" }],
+  font: "Poppins",
+  theme: "light",
+  template: "TemplateModern",
 };
 
 export default function BuilderPage() {
-  const [data, setData] = useState({
-    name: "",
-    about: "",
-    skills: "",
-    font: "Poppins",
-    theme: "light",
-    template: "Modern",
-  });
+  const [data, setData] = useState(defaultData);
   const [preview, setPreview] = useState(false);
-
-  // Equal height sync
+  const [message, setMessage] = useState("");
+  const [publishedUrl, setPublishedUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const leftBoxRef = useRef(null);
   const rightBoxRef = useRef(null);
 
   useEffect(() => {
+    (async () => {
+      if (!localStorage.getItem("token")) return;
+      try {
+        const res = await getMyPortfolioApi();
+        if (res.portfolio) {
+          setData({ ...defaultData, ...res.portfolio });
+          setPreview(true);
+          if (res.portfolio.slug) {
+            setPublishedUrl(`${window.location.origin}/portfolio/${res.portfolio.slug}`);
+          }
+        }
+      } catch {
+        setMessage("Log in to save and publish your portfolio.");
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     if (leftBoxRef.current && rightBoxRef.current) {
-      const leftHeight = leftBoxRef.current.offsetHeight;
-      rightBoxRef.current.style.minHeight = `${leftHeight}px`;
+      rightBoxRef.current.style.minHeight = `${leftBoxRef.current.offsetHeight}px`;
     }
   }, [preview, data]);
 
-  // Save
-  const handleSave = async () => {
+  const handleSave = async (portfolioData = data) => {
+    setIsSaving(true);
     try {
-      const payload = {
-        ...data,
-        template: data.template || "Modern",
-        font: data.font || "Poppins",
-        theme: data.theme || "light",
-      };
-      await savePortfolioApi(payload);
-      alert("✅ Saved successfully!");
+      const res = await savePortfolioApi(portfolioData);
+      setData({ ...defaultData, ...res.portfolio });
       setPreview(true);
+      setMessage("Portfolio saved successfully.");
+      return res.portfolio;
     } catch (err) {
-      console.error(err);
-      alert("❌ Error saving portfolio");
+      setMessage(err.response?.data?.message || "Error saving portfolio.");
+      throw err;
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  // ✅ Simple Publish — creates fake link, copies & opens it
-  const handlePublish = async () => {
+  const handlePublish = async (portfolioData = data) => {
+    setIsPublishing(true);
     try {
-      const payload = {
-        ...data,
-        template: data.template || "Modern",
-        font: data.font || "Poppins",
-        theme: data.theme || "light",
-      };
-
-      // Create fake portfolio URL
-      const fakeUrl = `https://my-portfolio-demo.com/${encodeURIComponent(
-        data.name || "user"
-      )}-${Date.now()}`;
-
-      // Copy to clipboard
-      await navigator.clipboard.writeText(fakeUrl);
-
-      // Show popup message
-      alert(`🌐 Portfolio published!\n\nLink copied to clipboard:\n${fakeUrl}`);
-
-      // Open in new tab
-      window.open(fakeUrl, "_blank");
+      const res = await publishPortfolioApi(portfolioData);
+      const absoluteUrl = `${window.location.origin}${res.url}`;
+      setData({ ...defaultData, ...res.portfolio });
+      setPublishedUrl(absoluteUrl);
+      setPreview(true);
+      try {
+        await navigator.clipboard?.writeText(absoluteUrl);
+        setMessage("Portfolio published. The link has been copied to your clipboard.");
+      } catch {
+        setMessage("Portfolio published. Use the link below to open or copy it.");
+      }
+      window.open(absoluteUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
-      console.error(err);
-      alert("❌ Error publishing portfolio");
+      setMessage(err.response?.data?.message || "Error publishing portfolio.");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -102,21 +115,33 @@ export default function BuilderPage() {
         gap: 4,
       }}
     >
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
         <Typography variant="h3" fontWeight="bold" textAlign="center">
-          ✨ Portfolio Builder
+          Portfolio Builder
         </Typography>
         <Typography color="text.secondary" textAlign="center" sx={{ mt: 1, mb: 3 }}>
-          Fill your details, preview live, and publish your stunning portfolio.
+          Fill your details, preview live, and publish your portfolio.
         </Typography>
       </motion.div>
 
-      {/* Font/Theme/Template Controls */}
+      {message && (
+        <Alert severity={message.toLowerCase().includes("error") ? "error" : "info"} sx={{ width: "100%", maxWidth: 900 }}>
+          {message}
+          {publishedUrl && (
+            <>
+              {" "}
+              <Link href={publishedUrl} target="_blank" rel="noreferrer">
+                Open published portfolio
+              </Link>
+            </>
+          )}
+        </Alert>
+      )}
+
       <Box
         sx={{
           display: "flex",
@@ -132,11 +157,7 @@ export default function BuilderPage() {
       >
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Font Style</InputLabel>
-          <Select
-            value={data.font}
-            label="Font Style"
-            onChange={(e) => setData({ ...data, font: e.target.value })}
-          >
+          <Select value={data.font} label="Font Style" onChange={(e) => setData({ ...data, font: e.target.value })}>
             <MenuItem value="Poppins">Poppins</MenuItem>
             <MenuItem value="Roboto">Roboto</MenuItem>
             <MenuItem value="Lora">Lora</MenuItem>
@@ -146,11 +167,7 @@ export default function BuilderPage() {
 
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Theme</InputLabel>
-          <Select
-            value={data.theme}
-            label="Theme"
-            onChange={(e) => setData({ ...data, theme: e.target.value })}
-          >
+          <Select value={data.theme} label="Theme" onChange={(e) => setData({ ...data, theme: e.target.value })}>
             <MenuItem value="light">Light</MenuItem>
             <MenuItem value="dark">Dark</MenuItem>
           </Select>
@@ -158,20 +175,17 @@ export default function BuilderPage() {
 
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Template</InputLabel>
-          <Select
-            value={data.template}
-            label="Template"
-            onChange={(e) => setData({ ...data, template: e.target.value })}
-          >
-            <MenuItem value="Modern">Modern</MenuItem>
-            <MenuItem value="Classic">Classic</MenuItem>
-            <MenuItem value="Elegant">Elegant</MenuItem>
-            <MenuItem value="Creative">Creative</MenuItem>
+          <Select value={data.template} label="Template" onChange={(e) => setData({ ...data, template: e.target.value })}>
+            <MenuItem value="TemplateModern">Modern</MenuItem>
+            <MenuItem value="TemplateMinimal">Minimal</MenuItem>
+            <MenuItem value="TemplateGradient">Gradient</MenuItem>
+            <MenuItem value="TemplateClassic">Classic</MenuItem>
+            <MenuItem value="TemplateElegant">Elegant</MenuItem>
+            <MenuItem value="TemplateBold">Bold</MenuItem>
           </Select>
         </FormControl>
       </Box>
 
-      {/* Builder Area */}
       <Box
         component={motion.div}
         initial={{ opacity: 0 }}
@@ -186,7 +200,6 @@ export default function BuilderPage() {
           alignItems: "stretch",
         }}
       >
-        {/* Left Side */}
         <Paper
           ref={leftBoxRef}
           elevation={6}
@@ -194,32 +207,26 @@ export default function BuilderPage() {
             flex: 1,
             p: 4,
             borderRadius: 3,
-            minWidth: 400,
+            minWidth: { xs: "100%", md: 400 },
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             bgcolor: "background.paper",
           }}
         >
-          <PortfolioForm
-            data={data}
-            setData={setData}
-            onSave={handleSave}
-            onPublish={handlePublish}
-          />
+          <PortfolioForm data={data} setData={setData} onSave={handleSave} onPublish={handlePublish} />
 
           <Divider sx={{ my: 3 }} />
           <Box sx={{ display: "flex", gap: 2 }}>
-            <Button fullWidth variant="contained" color="primary" onClick={handleSave}>
-              Save & Preview
+            <Button fullWidth variant="contained" color="primary" onClick={() => handleSave()} disabled={isSaving || isPublishing}>
+              {isSaving ? "Saving..." : "Save & Preview"}
             </Button>
-            <Button fullWidth variant="outlined" color="success" onClick={handlePublish}>
-              Publish Online
+            <Button fullWidth variant="outlined" color="success" onClick={() => handlePublish()} disabled={isSaving || isPublishing}>
+              {isPublishing ? "Publishing..." : "Publish Online"}
             </Button>
           </Box>
         </Paper>
 
-        {/* Right Side - Live Preview */}
         {preview && (
           <Paper
             ref={rightBoxRef}
@@ -240,7 +247,7 @@ export default function BuilderPage() {
             }}
           >
             <Typography variant="h5" gutterBottom fontWeight="bold" textAlign="center">
-              👀 Live Preview
+              Live Preview
             </Typography>
             <LivePreview data={data} />
           </Paper>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -17,54 +17,52 @@ import {
 import { AddCircle, Delete } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
+const emptyForm = {
+  name: "",
+  title: "",
+  email: "",
+  about: "",
+  skills: [""],
+  projects: [{ title: "", desc: "", link: "" }],
+  experience: [{ company: "", role: "", duration: "" }],
+  education: [{ institution: "", degree: "", year: "" }],
+  template: "TemplateModern",
+  font: "Poppins",
+  theme: "light",
+};
+
 export default function PortfolioForm({ data, setData, onSave, onPublish }) {
   const theme = useTheme();
+  const [form, setForm] = useState({ ...emptyForm, ...data });
 
-  const [form, setForm] = useState({
-    name: data.name || "",
-    title: data.title || "",
-    about: data.about || "",
-    skills: data.skills || [""],
-    projects: data.projects || [{ title: "", desc: "" }],
-    experience: data.experience || [{ company: "", role: "", duration: "" }],
-    education: data.education || [{ institution: "", degree: "", year: "" }],
-    template: data.template || "TemplateModern",
-    font: data.font || "Poppins",
-    theme: data.theme || "light",
-  });
+  useEffect(() => {
+    setForm({ ...emptyForm, ...data });
+  }, [data]);
 
-  const handleChange = (field, value) => {
-    const updated = { ...form, [field]: value };
+  const updateForm = (updated) => {
     setForm(updated);
     setData(updated);
+  };
+
+  const handleChange = (field, value) => {
+    updateForm({ ...form, [field]: value });
   };
 
   const handleArrayChange = (array, index, field, value) => {
     const updated = [...form[array]];
     if (typeof updated[index] === "object" && field) updated[index][field] = value;
     else updated[index] = value;
-    const newForm = { ...form, [array]: updated };
-    setForm(newForm);
-    setData(newForm);
+    updateForm({ ...form, [array]: updated });
   };
 
   const handleAddItem = (array, template) => {
-    const updated = { ...form, [array]: [...form[array], template] };
-    setForm(updated);
-    setData(updated);
+    updateForm({ ...form, [array]: [...form[array], template] });
   };
 
   const handleRemoveItem = (array, index) => {
     const updated = [...form[array]];
     updated.splice(index, 1);
-    const newForm = { ...form, [array]: updated };
-    setForm(newForm);
-    setData(newForm);
-  };
-
-  const handleSubmit = () => {
-    setData(form);
-    onSave();
+    updateForm({ ...form, [array]: updated.length ? updated : [emptyForm[array][0]] });
   };
 
   return (
@@ -82,35 +80,19 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
       }}
     >
       <Typography variant="h5" fontWeight="bold" gutterBottom>
-        🧩 Portfolio Details
+        Portfolio Details
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
-      {/* Basic Info */}
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Full Name"
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            variant="outlined"
-            InputLabelProps={{
-              style: { color: theme.palette.text.secondary },
-            }}
-          />
+          <TextField fullWidth label="Full Name" value={form.name} onChange={(e) => handleChange("name", e.target.value)} />
         </Grid>
         <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Professional Title"
-            value={form.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            variant="outlined"
-            InputLabelProps={{
-              style: { color: theme.palette.text.secondary },
-            }}
-          />
+          <TextField fullWidth label="Professional Title" value={form.title} onChange={(e) => handleChange("title", e.target.value)} />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField fullWidth label="Email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
         </Grid>
         <Grid item xs={12}>
           <TextField
@@ -120,71 +102,24 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
             label="About You"
             value={form.about}
             onChange={(e) => handleChange("about", e.target.value)}
-            variant="outlined"
-            InputLabelProps={{
-              style: { color: theme.palette.text.secondary },
-            }}
           />
         </Grid>
       </Grid>
 
-      {/* Font, Theme, Template */}
       <Grid container spacing={2} sx={{ mt: 3 }}>
         {[
-          {
-            label: "Font Style",
-            field: "font",
-            options: ["Poppins", "Roboto", "Lora", "Montserrat"],
-          },
-          {
-            label: "Theme",
-            field: "theme",
-            options: ["light", "dark"],
-          },
+          { label: "Font Style", field: "font", options: ["Poppins", "Roboto", "Lora", "Montserrat"] },
+          { label: "Theme", field: "theme", options: ["light", "dark"] },
           {
             label: "Template",
             field: "template",
-            options: [
-              "TemplateModern",
-              "TemplateMinimal",
-              "TemplateGradient",
-              "TemplateClassic",
-              "TemplateElegant",
-              "TemplateBold",
-            ],
+            options: ["TemplateModern", "TemplateMinimal", "TemplateGradient", "TemplateClassic", "TemplateElegant", "TemplateBold"],
           },
         ].map((select) => (
           <Grid item xs={12} sm={4} key={select.field}>
-            <FormControl
-              fullWidth
-              variant="outlined"
-              sx={{
-                minHeight: "70px",
-                "& .MuiInputLabel-root": {
-                  fontSize: "0.9rem",
-                  whiteSpace: "nowrap",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "56px",
-                },
-              }}
-            >
-              <InputLabel shrink>{select.label}</InputLabel>
-              <Select
-                value={form[select.field]}
-                onChange={(e) => handleChange(select.field, e.target.value)}
-                label={select.label}
-                sx={{
-                  height: "56px",
-                  fontSize: "1rem",
-                  bgcolor: theme.palette.background.default,
-                  color: theme.palette.text.primary,
-                  "& .MuiSelect-select": {
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                }}
-              >
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>{select.label}</InputLabel>
+              <Select value={form[select.field]} onChange={(e) => handleChange(select.field, e.target.value)} label={select.label}>
                 {select.options.map((opt) => (
                   <MenuItem key={opt} value={opt}>
                     {opt.replace("Template", "")}
@@ -196,49 +131,31 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
         ))}
       </Grid>
 
-      {/* Dynamic sections */}
       {[
-        { title: "💡 Skills", key: "skills", template: "" },
-        { title: "🚀 Projects", key: "projects", template: { title: "", desc: "" } },
-        {
-          title: "🏢 Experience",
-          key: "experience",
-          template: { company: "", role: "", duration: "" },
-        },
-        {
-          title: "🎓 Education",
-          key: "education",
-          template: { institution: "", degree: "", year: "" },
-        },
-      ].map((section, idx) => (
-        <Box key={idx} sx={{ mt: 4 }}>
+        { title: "Skills", key: "skills", template: "" },
+        { title: "Projects", key: "projects", template: { title: "", desc: "", link: "" } },
+        { title: "Experience", key: "experience", template: { company: "", role: "", duration: "" } },
+        { title: "Education", key: "education", template: { institution: "", degree: "", year: "" } },
+      ].map((section) => (
+        <Box key={section.key} sx={{ mt: 4 }}>
           <Typography variant="h6">{section.title}</Typography>
 
           {form[section.key].map((item, i) => (
             <Box key={i} sx={{ mt: 1 }}>
               {typeof item === "object" ? (
                 <Grid container spacing={2} alignItems="center">
-                  {Object.keys(item).map((field, j) => (
-                    <Grid item xs={Object.keys(item).length === 2 ? 6 : 4} key={j}>
+                  {Object.keys(item).map((field) => (
+                    <Grid item xs={12} sm={field === "link" ? 12 : 4} key={field}>
                       <TextField
                         fullWidth
                         label={field.charAt(0).toUpperCase() + field.slice(1)}
                         value={item[field]}
-                        onChange={(e) =>
-                          handleArrayChange(section.key, i, field, e.target.value)
-                        }
-                        variant="outlined"
-                        InputLabelProps={{
-                          style: { color: theme.palette.text.secondary },
-                        }}
+                        onChange={(e) => handleArrayChange(section.key, i, field, e.target.value)}
                       />
                     </Grid>
                   ))}
-                  <Grid item xs={1}>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleRemoveItem(section.key, i)}
-                    >
+                  <Grid item xs={12} sm={1}>
+                    <IconButton color="error" onClick={() => handleRemoveItem(section.key, i)} aria-label={`Remove ${section.title}`}>
                       <Delete />
                     </IconButton>
                   </Grid>
@@ -249,49 +166,28 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
                     fullWidth
                     label={`Skill #${i + 1}`}
                     value={item}
-                    onChange={(e) =>
-                      handleArrayChange(section.key, i, null, e.target.value)
-                    }
-                    variant="outlined"
-                    InputLabelProps={{
-                      style: { color: theme.palette.text.secondary },
-                    }}
+                    onChange={(e) => handleArrayChange(section.key, i, null, e.target.value)}
                   />
-                  <IconButton
-                    color="error"
-                    onClick={() => handleRemoveItem(section.key, i)}
-                  >
+                  <IconButton color="error" onClick={() => handleRemoveItem(section.key, i)} aria-label="Remove skill">
                     <Delete />
                   </IconButton>
                 </Box>
               )}
             </Box>
           ))}
-          <Button
-            startIcon={<AddCircle />}
-            onClick={() => handleAddItem(section.key, section.template)}
-            sx={{ mt: 1 }}
-          >
-            Add {section.key.charAt(0).toUpperCase() + section.key.slice(1)}
+          <Button startIcon={<AddCircle />} onClick={() => handleAddItem(section.key, section.template)} sx={{ mt: 1 }}>
+            Add {section.title}
           </Button>
         </Box>
       ))}
 
       <Divider sx={{ my: 3 }} />
       <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-        <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={handleSubmit}>
-          💾 Save
+        <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => onSave(form)}>
+          Save
         </Button>
-        <Button
-          variant="outlined"
-          color="success"
-          sx={{ flex: 1 }}
-          onClick={() => {
-            setData(form);
-            onPublish();
-          }}
-        >
-          🌐 Publish
+        <Button variant="outlined" color="success" sx={{ flex: 1 }} onClick={() => onPublish(form)}>
+          Publish
         </Button>
       </Box>
     </Paper>
