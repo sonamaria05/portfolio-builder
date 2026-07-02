@@ -7,27 +7,36 @@ import {
   Paper,
   Box,
   Link,
+  Alert,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { signupApi } from "../api";
 import { useNavigate } from "react-router-dom";
+import AnimatedBackdrop from "../components/AnimatedBackdrop";
 import SignupImg from "../assets/signup_illustration.svg"; // ✅ Add this SVG (see below)
 
 export default function SignupPage() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async () => {
-  try {
-    const res = await signupApi(form.username, form.email, form.password);
-    alert(res.message || "Signup successful!");
-    navigate("/login");
-  } catch (err) {
-    alert("Signup failed. Try again.");
-  }
-};
+    setError("");
+    setLoading(true);
+    try {
+      const res = await signupApi(form.username, form.email, form.password);
+      alert(res.message || "Signup successful!");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Signup failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
+    <AnimatedBackdrop compact>
     <Container
       maxWidth="lg"
       sx={{
@@ -39,23 +48,36 @@ export default function SignupPage() {
     >
       <Paper
         elevation={6}
+        component={motion.div}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.65 }}
         sx={{
           display: "flex",
-          borderRadius: 4,
+          borderRadius: 3,
           overflow: "hidden",
           width: "100%",
           maxWidth: 900,
+          border: "1px solid rgba(33,150,243,0.12)",
         }}
       >
         {/* Left side image */}
         <Box
           sx={{
             flex: 1,
-            backgroundColor: "#f5f7fb",
+            background: "linear-gradient(135deg, #e8f5e9, #e3f2fd)",
             display: { xs: "none", md: "flex" },
             alignItems: "center",
             justifyContent: "center",
             p: 4,
+            position: "relative",
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              inset: 24,
+              border: "1px solid rgba(25,118,210,0.18)",
+              borderRadius: 3,
+            },
           }}
         >
           <motion.img
@@ -89,6 +111,12 @@ export default function SignupPage() {
             Join us and start building your professional portfolio today!
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
           <TextField
             fullWidth
             label="Username"
@@ -118,8 +146,9 @@ export default function SignupPage() {
             fullWidth
             sx={{ mt: 3, borderRadius: 2 }}
             onClick={handleSignup}
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Creating account..." : "Sign Up"}
           </Button>
 
           <Typography sx={{ mt: 3, textAlign: "center" }}>
@@ -131,5 +160,6 @@ export default function SignupPage() {
         </Box>
       </Paper>
     </Container>
+    </AnimatedBackdrop>
   );
 }

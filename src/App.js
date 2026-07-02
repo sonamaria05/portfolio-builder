@@ -25,11 +25,19 @@ function Navbar({ mode, toggleColorMode }) {
   const token = localStorage.getItem("token");
 
   return (
-    <AppBar position="static" color="primary" sx={{ mb: 4 }}>
+    <AppBar
+      position="static"
+      color="primary"
+      sx={{
+        mb: 4,
+        background: "linear-gradient(90deg, #1565c0, #00838f)",
+        boxShadow: "0 12px 34px rgba(21,101,192,0.22)",
+      }}
+    >
       <Toolbar>
         <Typography
           variant="h6"
-          sx={{ flexGrow: 1, cursor: "pointer", fontWeight: 600 }}
+          sx={{ flexGrow: 1, cursor: "pointer", fontWeight: 700, letterSpacing: 0 }}
           onClick={() => navigate("/")}
         >
           Portfolio Builder
@@ -71,7 +79,15 @@ function Navbar({ mode, toggleColorMode }) {
 
 function Footer() {
   return (
-    <Box sx={{ textAlign: "center", py: 2, bgcolor: "background.paper", mt: 4 }}>
+    <Box
+      sx={{
+        textAlign: "center",
+        py: 2,
+        bgcolor: "background.paper",
+        mt: 4,
+        borderTop: "1px solid rgba(33,150,243,0.12)",
+      }}
+    >
       <Typography variant="body2" color="text.secondary">
         © {new Date().getFullYear()} Portfolio Builder | Designed with care using React + MUI
       </Typography>
@@ -129,7 +145,7 @@ function App() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <BrowserRouter>
+        <BrowserRouter basename={process.env.PUBLIC_URL || "/"}>
           <AppContent mode={mode} toggleColorMode={colorMode.toggleColorMode} />
         </BrowserRouter>
       </ThemeProvider>

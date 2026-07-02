@@ -12,11 +12,15 @@ import {
   MenuItem,
   Alert,
   Link,
+  Chip,
+  Stack,
 } from "@mui/material";
+import { AutoAwesome, CloudDone, Tune } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import PortfolioForm from "../components/PortfolioForm";
 import LivePreview from "../components/LivePreview";
 import { getMyPortfolioApi, publishPortfolioApi, savePortfolioApi } from "../api";
+import AnimatedBackdrop from "../components/AnimatedBackdrop";
 
 const defaultData = {
   name: "",
@@ -31,6 +35,8 @@ const defaultData = {
   theme: "light",
   template: "TemplateModern",
 };
+
+const appBasePath = process.env.PUBLIC_URL || "";
 
 export default function BuilderPage() {
   const [data, setData] = useState(defaultData);
@@ -51,7 +57,7 @@ export default function BuilderPage() {
           setData({ ...defaultData, ...res.portfolio });
           setPreview(true);
           if (res.portfolio.slug) {
-            setPublishedUrl(`${window.location.origin}/portfolio/${res.portfolio.slug}`);
+            setPublishedUrl(`${window.location.origin}${appBasePath}/portfolio/${res.portfolio.slug}`);
           }
         }
       } catch {
@@ -76,7 +82,6 @@ export default function BuilderPage() {
       return res.portfolio;
     } catch (err) {
       setMessage(err.response?.data?.message || "Error saving portfolio.");
-      throw err;
     } finally {
       setIsSaving(false);
     }
@@ -86,7 +91,7 @@ export default function BuilderPage() {
     setIsPublishing(true);
     try {
       const res = await publishPortfolioApi(portfolioData);
-      const absoluteUrl = `${window.location.origin}${res.url}`;
+      const absoluteUrl = `${window.location.origin}${appBasePath}${res.url}`;
       setData({ ...defaultData, ...res.portfolio });
       setPublishedUrl(absoluteUrl);
       setPreview(true);
@@ -105,21 +110,27 @@ export default function BuilderPage() {
   };
 
   return (
-    <Container
-      maxWidth="xl"
-      sx={{
-        py: 5,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 4,
-      }}
-    >
+    <AnimatedBackdrop compact>
+      <Container
+        maxWidth="xl"
+        sx={{
+          py: 5,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 2 }}>
+          <Chip icon={<AutoAwesome />} label="Design" color="primary" variant="outlined" />
+          <Chip icon={<Tune />} label="Customize" color="primary" variant="outlined" />
+          <Chip icon={<CloudDone />} label="Publish" color="primary" variant="outlined" />
+        </Stack>
         <Typography variant="h3" fontWeight="bold" textAlign="center">
           Portfolio Builder
         </Typography>
@@ -212,6 +223,18 @@ export default function BuilderPage() {
             flexDirection: "column",
             justifyContent: "space-between",
             bgcolor: "background.paper",
+            position: "relative",
+            overflow: "hidden",
+            border: "1px solid rgba(33,150,243,0.12)",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 5,
+              background: "linear-gradient(90deg, #1976d2, #00acc1, #66bb6a)",
+            },
           }}
         >
           <PortfolioForm data={data} setData={setData} onSave={handleSave} onPublish={handlePublish} />
@@ -253,6 +276,7 @@ export default function BuilderPage() {
           </Paper>
         )}
       </Box>
-    </Container>
+      </Container>
+    </AnimatedBackdrop>
   );
 }

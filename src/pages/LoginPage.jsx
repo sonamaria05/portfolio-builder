@@ -7,17 +7,23 @@ import {
   Paper,
   Box,
   Link,
+  Alert,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { loginApi } from "../api";
 import { useNavigate } from "react-router-dom";
+import AnimatedBackdrop from "../components/AnimatedBackdrop";
 import LoginImg from "../assets/login_illustration.svg"; // ✅ Add an SVG here
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    setError("");
+    setLoading(true);
     try {
       const res = await loginApi(form.email, form.password);
       if (res.token) {
@@ -25,14 +31,17 @@ export default function LoginPage() {
         alert("Login successful!");
         navigate("/builder");
       } else {
-        alert(res.message || "Login failed");
+        setError(res.message || "Login failed");
       }
     } catch (err) {
-      alert("Something went wrong. Please try again.");
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
+    <AnimatedBackdrop compact>
     <Container
       maxWidth="lg"
       sx={{
@@ -44,23 +53,36 @@ export default function LoginPage() {
     >
       <Paper
         elevation={6}
+        component={motion.div}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.65 }}
         sx={{
           display: "flex",
-          borderRadius: 4,
+          borderRadius: 3,
           overflow: "hidden",
           width: "100%",
           maxWidth: 900,
+          border: "1px solid rgba(33,150,243,0.12)",
         }}
       >
         {/* Left Image Section */}
         <Box
           sx={{
             flex: 1,
-            backgroundColor: "#eef2f8",
+            background: "linear-gradient(135deg, #e3f2fd, #e8f5e9)",
             display: { xs: "none", md: "flex" },
             alignItems: "center",
             justifyContent: "center",
             p: 4,
+            position: "relative",
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              inset: 24,
+              border: "1px solid rgba(25,118,210,0.18)",
+              borderRadius: 3,
+            },
           }}
         >
           <motion.img
@@ -88,11 +110,17 @@ export default function LoginPage() {
           }}
         >
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Welcome Back 👋
+            Welcome Back
           </Typography>
           <Typography color="text.secondary" mb={3}>
             Log in to access your portfolio dashboard.
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <TextField
             fullWidth
@@ -116,8 +144,9 @@ export default function LoginPage() {
             fullWidth
             sx={{ mt: 3, borderRadius: 2 }}
             onClick={handleLogin}
+            disabled={loading}
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </Button>
 
           <Typography sx={{ mt: 3, textAlign: "center" }}>
@@ -129,5 +158,6 @@ export default function LoginPage() {
         </Box>
       </Paper>
     </Container>
+    </AnimatedBackdrop>
   );
 }

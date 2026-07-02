@@ -2,12 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Container, Typography, Box, Stack } from "@mui/material";
 import { motion } from "framer-motion";
+import AnimatedBackdrop from "../components/AnimatedBackdrop";
 import PortfolioImg from "../assets/portfolio_hero.svg"; // 👈 Add any SVG or PNG image inside /src/assets
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   return (
+    <AnimatedBackdrop>
     <Container
       maxWidth="lg"
       sx={{
@@ -55,10 +57,20 @@ export default function HomePage() {
             sx={{
               px: 4,
               py: 1.5,
-              borderRadius: "30px",
+              borderRadius: 2,
               textTransform: "none",
+              position: "relative",
+              overflow: "hidden",
               background: "linear-gradient(45deg, #2196f3, #21cbf3)",
               "&:hover": { background: "linear-gradient(45deg, #1e88e5, #1ec8f3)" },
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                inset: 0,
+                width: "60%",
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+                animation: "sheen 2.8s ease-in-out infinite",
+              },
             }}
             onClick={() => navigate("/signup")}
           >
@@ -71,10 +83,11 @@ export default function HomePage() {
             sx={{
               px: 4,
               py: 1.5,
-              borderRadius: "30px",
+              borderRadius: 2,
               textTransform: "none",
               borderColor: "#21cbf3",
               color: "#21cbf3",
+              bgcolor: "rgba(255,255,255,0.72)",
               "&:hover": { borderColor: "#1e88e5", color: "#1e88e5" },
             }}
             onClick={() => navigate("/login")}
@@ -94,14 +107,23 @@ export default function HomePage() {
           width: { xs: "80%", md: "45%" },
           display: "flex",
           justifyContent: "center",
+          position: "relative",
+          p: 3,
+          borderRadius: 4,
+          background: "linear-gradient(135deg, rgba(227,242,253,0.9), rgba(232,245,233,0.85))",
+          border: "1px solid rgba(33,150,243,0.12)",
+          boxShadow: "0 24px 70px rgba(25,118,210,0.16)",
         }}
       >
-        <img
+        <motion.img
           src={PortfolioImg}
           alt="Portfolio Builder Illustration"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           style={{ width: "100%", maxWidth: "500px" }}
         />
       </Box>
     </Container>
+    </AnimatedBackdrop>
   );
 }

@@ -10,6 +10,7 @@
 
 # production
 /build
+/build-check
 
 # local backend data
 /server/data
