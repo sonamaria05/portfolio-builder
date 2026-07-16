@@ -31,7 +31,7 @@ const emptyForm = {
   theme: "light",
 };
 
-export default function PortfolioForm({ data, setData, onSave, onPublish }) {
+export default function PortfolioForm({ data, setData }) {
   const theme = useTheme();
   const [form, setForm] = useState({ ...emptyForm, ...data });
 
@@ -113,7 +113,17 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
           {
             label: "Template",
             field: "template",
-            options: ["TemplateModern", "TemplateMinimal", "TemplateGradient", "TemplateClassic", "TemplateElegant", "TemplateBold"],
+            options: [
+              "TemplateModern",
+              "TemplateExecutive",
+              "TemplateShowcase",
+              "TemplateTimeline",
+              "TemplateMinimal",
+              "TemplateGradient",
+              "TemplateClassic",
+              "TemplateElegant",
+              "TemplateBold",
+            ],
           },
         ].map((select) => (
           <Grid item xs={12} sm={4} key={select.field}>
@@ -180,16 +190,6 @@ export default function PortfolioForm({ data, setData, onSave, onPublish }) {
           </Button>
         </Box>
       ))}
-
-      <Divider sx={{ my: 3 }} />
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-        <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => onSave(form)}>
-          Save
-        </Button>
-        <Button variant="outlined" color="success" sx={{ flex: 1 }} onClick={() => onPublish(form)}>
-          Publish
-        </Button>
-      </Box>
     </Paper>
   );
 }

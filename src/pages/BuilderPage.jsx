@@ -15,7 +15,7 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import { AutoAwesome, CloudDone, Tune } from "@mui/icons-material";
+import { AutoAwesome, CloudDone, DashboardCustomize, Timeline, Tune, Workspaces } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import PortfolioForm from "../components/PortfolioForm";
 import LivePreview from "../components/LivePreview";
@@ -37,6 +37,13 @@ const defaultData = {
 };
 
 const appBasePath = process.env.PUBLIC_URL || "";
+
+const templateCards = [
+  { value: "TemplateModern", label: "Modern", icon: <DashboardCustomize />, note: "Balanced profile and project layout." },
+  { value: "TemplateExecutive", label: "Executive", icon: <Workspaces />, note: "Boardroom-ready summary style." },
+  { value: "TemplateShowcase", label: "Showcase", icon: <AutoAwesome />, note: "Project-first visual portfolio." },
+  { value: "TemplateTimeline", label: "Timeline", icon: <Timeline />, note: "Experience-led career story." },
+];
 
 export default function BuilderPage() {
   const [data, setData] = useState(defaultData);
@@ -188,6 +195,9 @@ export default function BuilderPage() {
           <InputLabel>Template</InputLabel>
           <Select value={data.template} label="Template" onChange={(e) => setData({ ...data, template: e.target.value })}>
             <MenuItem value="TemplateModern">Modern</MenuItem>
+            <MenuItem value="TemplateExecutive">Executive</MenuItem>
+            <MenuItem value="TemplateShowcase">Showcase</MenuItem>
+            <MenuItem value="TemplateTimeline">Timeline</MenuItem>
             <MenuItem value="TemplateMinimal">Minimal</MenuItem>
             <MenuItem value="TemplateGradient">Gradient</MenuItem>
             <MenuItem value="TemplateClassic">Classic</MenuItem>
@@ -195,6 +205,47 @@ export default function BuilderPage() {
             <MenuItem value="TemplateBold">Bold</MenuItem>
           </Select>
         </FormControl>
+      </Box>
+
+      <Box
+        sx={{
+          width: "100%",
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" },
+          gap: 2,
+        }}
+      >
+        {templateCards.map((template) => {
+          const selected = data.template === template.value;
+          return (
+            <Paper
+              key={template.value}
+              component={motion.button}
+              whileHover={{ y: -5 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setData({ ...data, template: template.value })}
+              sx={{
+                textAlign: "left",
+                p: 2,
+                borderRadius: 2,
+                border: selected ? "2px solid #1976d2" : "1px solid rgba(33,150,243,0.16)",
+                bgcolor: selected ? "rgba(25,118,210,0.08)" : "rgba(255,255,255,0.82)",
+                cursor: "pointer",
+                color: "text.primary",
+                font: "inherit",
+              }}
+            >
+              <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                <Box sx={{ color: selected ? "primary.main" : "text.secondary", display: "flex" }}>{template.icon}</Box>
+                <Typography fontWeight={800}>{template.label}</Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                {template.note}
+              </Typography>
+            </Paper>
+          );
+        })}
       </Box>
 
       <Box
@@ -237,7 +288,7 @@ export default function BuilderPage() {
             },
           }}
         >
-          <PortfolioForm data={data} setData={setData} onSave={handleSave} onPublish={handlePublish} />
+          <PortfolioForm data={data} setData={setData} />
 
           <Divider sx={{ my: 3 }} />
           <Box sx={{ display: "flex", gap: 2 }}>

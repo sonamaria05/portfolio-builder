@@ -11,6 +11,9 @@ import TemplateGradient from "./templates/TemplateGradient";
 import TemplateClassic from "./templates/TemplateClassic";
 import TemplateElegant from "./templates/TemplateElegant";
 import TemplateBold from "./templates/TemplateBold";
+import TemplateExecutive from "./templates/TemplateExecutive";
+import TemplateShowcase from "./templates/TemplateShowcase";
+import TemplateTimeline from "./templates/TemplateTimeline";
 
 export default function LivePreview({ data, showDownload = true }) {
   const previewRef = useRef();
@@ -51,6 +54,12 @@ export default function LivePreview({ data, showDownload = true }) {
         return <TemplateElegant data={data} />;
       case "TemplateBold":
         return <TemplateBold data={data} />;
+      case "TemplateExecutive":
+        return <TemplateExecutive data={data} />;
+      case "TemplateShowcase":
+        return <TemplateShowcase data={data} />;
+      case "TemplateTimeline":
+        return <TemplateTimeline data={data} />;
       default:
         return <TemplateModern data={data} />;
     }
@@ -103,6 +112,7 @@ export default function LivePreview({ data, showDownload = true }) {
           color: data.theme === "dark" ? "#fff" : "#000",
           boxShadow: 3,
           transition: "all 0.3s ease",
+          border: "1px solid rgba(25,118,210,0.12)",
         }}
       >
         {renderTemplate()}
